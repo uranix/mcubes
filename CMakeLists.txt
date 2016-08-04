@@ -4,6 +4,8 @@ project(mcubes)
 
 set(CMAKE_CXX_STANDARD 11)
 
+include_directories("/usr/include/eigen3/")
+
 set(SOURCES main.cpp vtk.cpp)
 
 add_executable(main ${SOURCES})

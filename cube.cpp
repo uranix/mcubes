@@ -19,6 +19,8 @@ int cubefaces[6][4] = {
 #include <unordered_set>
 #include <iostream>
 
+#include <Eigen/Core>
+
 void save(const std::string &filename, const std::vector<point> &pts, const std::vector<tet> &tets, const std::vector<double> &vals) {
     std::ofstream f(filename, std::ios::binary);
     f << "# vtk DataFile Version 3.0\n";
@@ -107,6 +109,8 @@ int main() {
     for (int cases = 0; cases < (1 << 8); cases++) {
         int lo, hi;
 
+        std::cout << "*** CASE " << cases << " ***" << std::endl;
+
         for (int k = 0; k < 8; k++)
             vals[k] = (cases & (1 << k)) ? 1 : 0;
 
@@ -126,14 +130,63 @@ int main() {
             int eid = iedgemap[e];
             int u = eid % 100;
             int v = eid / 100;
-            marks[e] = (vals[u] > theta) ^ (vals[v] > theta);
+            marks[e] = (vals[u] > theta) ^ (vals[v] > theta) ? 0 : -1;
+        }
+
+        assert(graph.size() == 50);
+
+        Eigen::Matrix<int, 50, 50> A, B;
+        A.setZero();
+
+        for (int u = 0; u < graph.size(); u++) {
+            if (marks[u] == -1)
+                continue;
+            A(u, u) = 1;
+            for (int v : graph[u]) {
+                int ev = iedgemap[v];
+                if (marks[v] == -1)
+                    continue;
+                A(u, v) = A(v, u) = 1;
+            }
+        }
+        A.swap(B);
+        do {
+            A.swap(B);
+            B.noalias() = (A * A).unaryExpr([] (int v) { return v > 0; } ).cast<int>();
+        } while (B != A);
+
+        int color = 1;
+        for (int u = 0; u < graph.size(); u++) {
+            if (marks[u] == -1)
+                continue;
+            if (marks[u] != 0)
+                continue;
+            for (int v = 0; v < graph.size(); v++)
+                if (A(u, v) == 1) {
+                    assert(marks[v] == 0);
+                    marks[v] = color;
+                }
+            color++;
+        }
+
+        std::cout << "disjoint patches: " << color - 1 << std::endl;
+
+        for (int u = 0; u < graph.size(); u++) {
+            if (marks[u] < 0)
+                continue;
+            int eu = iedgemap[u];
+            int v1, v2;
+            v1 = eu / 100;
+            v2 = eu % 100;
+            if (v1 < 8 && v2 < 8)
+                std::cout << "("<< v1 << ", " << v2 << ") -> " << marks[u] << std::endl;
         }
 
         std::ofstream dot("cube." + std::to_string(cases) + ".dot", std::ios::binary);
 
         dot << "strict graph cube {\n";
         for (int u = 0; u < graph.size(); u++) {
-            if (marks[u] == 0)
+            if (marks[u] == -1)
                 continue;
             int eu = iedgemap[u];
             if ((eu / 100) < 8 && (eu % 100) < 8) {
@@ -143,7 +196,7 @@ int main() {
             dot << "e" << eu / 100 << "_" << eu % 100 << " -- {";
             for (int v : graph[u]) {
                 int ev = iedgemap[v];
-                if (marks[v] == 0)
+                if (marks[v] == -1)
                     continue;
                 dot << "e" << ev / 100 << "_" << ev % 100 << " ";
             }

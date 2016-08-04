@@ -7,11 +7,6 @@ struct edge {
     edge(int i, int j, int k, int dir)
         : i(i), j(j), k(k), dir(dir)
     { }
-    static const edge fromid(int id) {
-        switch (id) {
-            case 0: 
-        }
-    }
     const edge shift(int i, int j, int k) const {
         return edge(i + this->i, j + this->j, k + this->k, dir);
     }

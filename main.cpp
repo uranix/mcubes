@@ -4,9 +4,8 @@
 #include <unordered_map>
 
 struct SurfaceMesh {
-    std::unordered_map<edge, double> pts;
+//    std::unordered_map<edge, double> pts;
     std::vector<triedge> tri;
-
 };
 
 struct VoxelMesh {
@@ -26,9 +25,9 @@ struct VoxelMesh {
     }
     const point center(int i, int j, int k) const {
         point p(ll);
-        p.x += (i + 0.5) * h.x
-        p.y += (j + 0.5) * h.y
-        p.z += (k + 0.5) * h.z
+        p.x += (i + 0.5) * h.x;
+        p.y += (j + 0.5) * h.y;
+        p.z += (k + 0.5) * h.z;
         return p;
     }
     const point edge_point(const edge &e, double w) const {

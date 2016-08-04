@@ -7,3 +7,5 @@ set(CMAKE_CXX_STANDARD 11)
 set(SOURCES main.cpp vtk.cpp)
 
 add_executable(main ${SOURCES})
+
+add_executable(cube cube.cpp)

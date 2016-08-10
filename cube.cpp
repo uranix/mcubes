@@ -1,4 +1,8 @@
 #include "geom.h"
+#include <cassert>
+#include <iomanip>
+#include <cstdio>
+#include <bitset>
 
 struct tet {
     int a, b, c, d;
@@ -10,6 +14,27 @@ int cubefaces[6][4] = {
     {0, 1, 3, 2}, {4, 6, 7, 5}
 };
 
+int cubeedge(int v1, int v2) {
+    // v1 = x1 + 2y1 + 4z1
+    // v2 = x2 + 2y2 + 4z2
+    int x1, x2, y1, y2, z1, z2;
+    x1 = v1 & 1;
+    x2 = v2 & 1;
+    y1 = (v1 & 2) >> 1;
+    y2 = (v2 & 2) >> 1;
+    z1 = v1 >> 2;
+    z2 = v2 >> 2;
+    if (x1 != x2) {
+        assert(y1 == y2 && z1 == z2);
+        return y1 + 2 * z1;
+    }
+    if (y1 != y2) {
+        assert(x1 == x2 && z1 == z2);
+        return 4 + x1 + 2 * z1;
+    }
+    assert(x1 == x2 && y1 == y2);
+    return 8 + x1 + 2 * y1;
+}
 
 #include <vector>
 #include <fstream>
@@ -106,6 +131,9 @@ int main() {
 
     std::vector<int> marks(edgemap.size());
 
+    FILE *lut = fopen("lut.h", "wb");
+    fprintf(lut, "static unsigned int edgeGroup[256] = {");
+
     for (int cases = 0; cases < (1 << 8); cases++) {
         int lo, hi;
 
@@ -171,16 +199,29 @@ int main() {
 
         std::cout << "disjoint patches: " << color - 1 << std::endl;
 
-        for (int u = 0; u < graph.size(); u++) {
-            if (marks[u] < 0)
-                continue;
-            int eu = iedgemap[u];
+        int code = 0;
+
+        for (const auto &e : edgemap) {
             int v1, v2;
-            v1 = eu / 100;
-            v2 = eu % 100;
-            if (v1 < 8 && v2 < 8)
-                std::cout << "("<< v1 << ", " << v2 << ") -> " << marks[u] << std::endl;
+            v1 = e.first / 100;
+            v2 = e.first % 100;
+            if (v1 < 8 && v2 < 8) {
+                int ceid = cubeedge(v1, v2);
+                int mkid = marks[e.second];
+                assert(mkid != 0);
+                if (mkid < 0)
+                    mkid = 3;
+                else
+                    mkid--;
+                assert(mkid < 4 && mkid >= 0);
+                code |= mkid << (2 * ceid);
+                std::cout << "(" << v1 << ", " << v2 << ") [" << ceid << "] -> " << marks[e.second] << std::endl;
+            }
         }
+        if ((cases % 8) == 0)
+            fprintf(lut, "\n\t");
+        fprintf(lut, "0x%06x,", code);
+        std::cout << std::bitset<24>(code) << std::endl;
 
         std::ofstream dot("cube." + std::to_string(cases) + ".dot", std::ios::binary);
 
@@ -206,6 +247,8 @@ int main() {
 
         save("cube." + std::to_string(cases) + ".vtk", pts, tets, vals);
     }
+    fprintf(lut, "\n};\n");
+    fclose(lut);
 
     return 0;
 }

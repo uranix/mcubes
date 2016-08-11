@@ -1,50 +1,65 @@
+#include <iostream>
+
+struct point;
+std::ostream &operator<<(std::ostream &o, const point &p);
+
 #include "vtk.h"
-#include "geom.h"
+#include "mesh.h"
 
-#include <unordered_map>
-
-struct SurfaceMesh {
-//    std::unordered_map<edge, double> pts;
-    std::vector<triedge> tri;
-};
-
-struct VoxelMesh {
-    int nx, ny, nz;
-    std::vector<double> val;
-    const point ll, ur, h;
-    VoxelMesh(int nx, int ny, int nz, const point &ll, const point &ur)
-        : nx(nx), ny(ny), nz(nz), val(nx * ny * nz), ll(ll), ur(ur),
-        h((ur.x - ll.x) / nx, (ur.y - ll.y) / ny, (ur.z - ll.z) / nz)
-    {
-    }
-    double &operator()(int i, int j, int k) {
-        return val[i + nx * (j + ny * k)];
-    }
-    const double &operator()(int i, int j, int k) const {
-        return val[i + nx * (j + ny * k)];
-    }
-    const point center(int i, int j, int k) const {
-        point p(ll);
-        p.x += (i + 0.5) * h.x;
-        p.y += (j + 0.5) * h.y;
-        p.z += (k + 0.5) * h.z;
-        return p;
-    }
-    const point edge_point(const edge &e, double w) const {
-        point p1(ll);
-        p1 += point(e.i * h.x, e.j * h.y, e.k * h.z);
-        point p2(p1);
-        if (e.dir == 0) p2.x += h.x;
-        if (e.dir == 1) p2.y += h.y;
-        if (e.dir == 2) p2.z += h.z;
-        return p1 * (1 - w) + p2 * (w);
-    }
-};
+std::ostream &operator<<(std::ostream &o, const point &p) {
+    return o << "(" << p.x << ", " << p.y << ", " << p.z << ")";
+}
 
 int main() {
     std::vector<point> pts;
-    std::vector<triangle> tri;
-    VoxelMesh vm(10, 10, 10, point(0, 0, 0), point(1, 1, 1));
-    save("test.vtk", pts, tri);
+//    std::vector<triangle> tri;
+    std::vector<quad> quads;
+    VoxelMesh vm(dim3(40, 40, 40), point(0, 0, 0), point(1, 1, 1));
+
+    std::vector<size_t> ptsoffs(vm.val.size());
+
+    vm.for_each_voxel([] (VoxelMesh &vm, const dim3 &vox) {
+            const point &p = vm.center(vox);
+            const point &dp1 = p - point(.7, .3, .3);
+            const point &dp2 = p - point(.4, .6, .6);
+            vm[vox] = 1. / dp1.dot(dp1) + 2. / dp2.dot(dp2);
+        });
+    vm.for_each_cube([&pts, &ptsoffs] (VoxelMesh &vm, const dim3 &cube) {
+            double level = 30;
+            ptsoffs[cube.linear_index(vm.n)] = pts.size();
+            vm.gen_vertices(cube, level, pts);
+        });
+//    vm.for_each_edge([&tri, &ptsoffs] (
+    vm.for_each_edge([&quads, &ptsoffs] (
+                const VoxelMesh &vm,
+                const std::array<char, 4> &edgedata,
+                const dim3 cubes[4])
+        {
+            int ec = edgedata[0] & 12;
+            for (int j = 1; j < 4; j++)
+                assert((edgedata[j] & 12) == ec);
+            ec >>= 2;
+            if (ec == 0 || ec == 3) {
+                for (int j = 0; j < 4; j++)
+                    assert((edgedata[j] & 3) == 3);
+                return;
+            }
+            int ptsid[4];
+            for (int j = 0; j < 4; j++)
+                ptsid[j] = ptsoffs[cubes[j].linear_index(vm.n)] + (edgedata[j] & 3);
+            if (ec == 1) {
+                // 0 1 3 2 -> 0 1 3 + 0 3 2
+                quads.push_back(quad{ptsid[0], ptsid[1], ptsid[3], ptsid[2]});
+//                tri.push_back(triangle{ptsid[0], ptsid[1], ptsid[3]});
+//                tri.push_back(triangle{ptsid[0], ptsid[3], ptsid[2]});
+            } else {
+                // 0 2 3 1 -> 0 2 3 + 0 3 1
+                quads.push_back(quad{ptsid[0], ptsid[2], ptsid[3], ptsid[1]});
+//                tri.push_back(triangle{ptsid[0], ptsid[2], ptsid[3]});
+//                tri.push_back(triangle{ptsid[0], ptsid[3], ptsid[1]});
+            }
+        });
+//    save("test.vtk", pts, tri);
+    save("test.vtk", pts, quads);
     return 0;
 }

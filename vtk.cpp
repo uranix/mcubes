@@ -18,3 +18,19 @@ void save(const std::string &filename, const std::vector<point> &pts, const std:
     f << "CELL_TYPES " << tri.size() << "\n";
     std::for_each(tri.begin(), tri.end(), [&f] (const triangle &) { f << "5\n"; });
 }
+
+void save(const std::string &filename, const std::vector<point> &pts, const std::vector<quad> &quads) {
+    std::ofstream f(filename, std::ios::out | std::ios::binary);
+    f << "# vtk DataFile Version 3.0\n";
+    f << "Trinagulated surface\n";
+    f << "ASCII\n";
+    f << "DATASET UNSTRUCTURED_GRID\n";
+    f << "POINTS " << pts.size() << " float\n";
+    for (const auto &p : pts)
+        f << p.x << " " << p.y << " " << p.z << "\n";
+    f << "CELLS " << quads.size() << " " << 5 * quads.size() << "\n";
+    for (const auto &q : quads)
+        f << "4 " << q.p1 << " " << q.p2 << " " << q.p3 << " " << q.p4 << "\n";
+    f << "CELL_TYPES " << quads.size() << "\n";
+    std::for_each(quads.begin(), quads.end(), [&f] (const quad &) { f << "9\n"; });
+}

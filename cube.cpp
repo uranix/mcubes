@@ -135,8 +135,6 @@ int main() {
     fprintf(lut, "static unsigned int edgeGroup[256] = {");
 
     for (int cases = 0; cases < (1 << 8); cases++) {
-        int lo, hi;
-
         std::cout << "*** CASE " << cases << " ***" << std::endl;
 
         for (int k = 0; k < 8; k++)
@@ -171,7 +169,6 @@ int main() {
                 continue;
             A(u, u) = 1;
             for (int v : graph[u]) {
-                int ev = iedgemap[v];
                 if (marks[v] == -1)
                     continue;
                 A(u, v) = A(v, u) = 1;

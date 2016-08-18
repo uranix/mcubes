@@ -152,7 +152,7 @@ int main() {
             vals[8 + f] *= 0.25;
         }
 
-        for (int e = 0; e < edgemap.size(); e++) {
+        for (size_t e = 0; e < edgemap.size(); e++) {
             int eid = iedgemap[e];
             int u = eid % 100;
             int v = eid / 100;
@@ -164,7 +164,7 @@ int main() {
         Eigen::Matrix<int, 50, 50> A, B;
         A.setZero();
 
-        for (int u = 0; u < graph.size(); u++) {
+        for (size_t u = 0; u < graph.size(); u++) {
             if (marks[u] == -1)
                 continue;
             A(u, u) = 1;
@@ -181,12 +181,12 @@ int main() {
         } while (B != A);
 
         int color = 1;
-        for (int u = 0; u < graph.size(); u++) {
+        for (size_t u = 0; u < graph.size(); u++) {
             if (marks[u] == -1)
                 continue;
             if (marks[u] != 0)
                 continue;
-            for (int v = 0; v < graph.size(); v++)
+            for (size_t v = 0; v < graph.size(); v++)
                 if (A(u, v) == 1) {
                     assert(marks[v] == 0);
                     marks[v] = color;
@@ -223,7 +223,7 @@ int main() {
         std::ofstream dot("cube." + std::to_string(cases) + ".dot", std::ios::binary);
 
         dot << "strict graph cube {\n";
-        for (int u = 0; u < graph.size(); u++) {
+        for (size_t u = 0; u < graph.size(); u++) {
             if (marks[u] == -1)
                 continue;
             int eu = iedgemap[u];

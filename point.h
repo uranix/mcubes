@@ -3,12 +3,26 @@
 #include <cmath>
 #include <cstddef>
 #include <cassert>
+#include <functional>
 
 struct dim3 {
     std::ptrdiff_t i, j, k;
+
+    struct hash {
+        size_t operator()(const dim3 &o) const {
+            size_t i = o.i;
+            size_t j = o.j;
+            size_t k = o.k;
+            std::hash<size_t> hasher;
+            return hasher(hasher(hasher(i) ^ j) ^ k);
+        }
+    };
     dim3(const std::ptrdiff_t i, const std::ptrdiff_t j, const std::ptrdiff_t k) : i(i), j(j), k(k) { }
     dim3() : dim3(0, 0, 0) { }
     dim3(const dim3 &o) : dim3(o.i, o.j, o.k) { }
+    bool operator==(const dim3 &o) const {
+        return (i == o.i) && (j == o.j) && (k == o.k);
+    }
     dim3 &operator=(const dim3 &o) {
         i = o.i;
         j = o.j;

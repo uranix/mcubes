@@ -17,9 +17,6 @@ double randv() {
 }
 
 int main() {
-    std::vector<point> pts;
-//    std::vector<triangle> tri;
-    std::vector<quad> quads;
     VoxelMesh vm(dim3(23, 21, 18), point(0, 0, 0), point(1, 1, 1));
 
     std::vector<metaball> mbs;
@@ -32,10 +29,15 @@ int main() {
             const point &p = vm.center(vox);
             vm[vox] = 0;
             for (const auto &m : mbs)
-                vm[vox] -= m(p);
+                vm[vox] += m(p);
         });
 
-    SurfaceMesh<quad> sm(vm, -20);
+/*
+    vm.for_each_voxel([] (VoxelMesh &vm, const dim3 &vox) {
+            vm[vox] = randv();
+        });
+*/
+    SurfaceMesh<triangle> sm(vm, 20);
     sm.save("test.vtk");
     return 0;
 }

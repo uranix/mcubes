@@ -2,8 +2,6 @@
 
 #include <vector>
 #include <array>
-#include <unordered_map>
-#include <iostream>
 
 #include "geom.h"
 #include "lut.h"
@@ -59,13 +57,12 @@ class SurfaceMesh {
     EdgeMesh em;
 public:
     SurfaceMesh(const VoxelMesh &vm, const double level) : em(vm.n) {
-        std::unordered_map<dim3, size_t, dim3::hash> ptsoffs;
+        std::vector<int> ptsoffs((vm.n.i + 1) * (vm.n.j + 1) * (vm.n.k + 1));
         vm.for_each_cube([this, &ptsoffs, level]
             (const VoxelMesh &vm, const dim3 &cube, unsigned int cubeflag) {
-                ptsoffs[cube] = pts.size();
-                int added = vm.gen_vertices(cube, cubeflag, level, pts, em);
-                if (added > 1)
-                    std::cout << "Patches: " << added << std::endl;
+                int cid = (cube + dim3(1, 1, 1)).linear_index(vm.n + dim3(1, 1, 1));
+                ptsoffs[cid] = pts.size();
+                vm.gen_vertices(cube, cubeflag, level, pts, em);
             });
         vm.for_each_edge(em, [this, &ptsoffs] (
                     const VoxelMesh &vm,
@@ -83,8 +80,10 @@ public:
                     return;
                 }
                 int ptsid[4];
-                for (int j = 0; j < 4; j++)
-                    ptsid[j] = ptsoffs[cubes[j]] + (edgedata[j] & 3);
+                for (int j = 0; j < 4; j++) {
+                    int cid = (cubes[j] + dim3(1, 1, 1)).linear_index(vm.n + dim3(1, 1, 1));
+                    ptsid[j] = ptsoffs[cid] + (edgedata[j] & 3);
+                }
                 if (ec == 1)
                     this->add_face(ptsid[0], ptsid[1], ptsid[3], ptsid[2], sig, dir);
                 else

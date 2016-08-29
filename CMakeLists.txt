@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 include_directories("/usr/include/eigen3/")
 
-add_definitions("-Wall -D_GLIBCXX_DEBUG")
+add_definitions("-Wall")
 set(SOURCES main.cpp vtk.cpp mesh.cpp)
 
 add_executable(main ${SOURCES})

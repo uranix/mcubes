@@ -5,6 +5,8 @@
 
 #include "mesh.h"
 
+double density(const point &);
+
 template<>
 void SurfaceMesh<quad>::save(const std::string &filename) const {
     std::ofstream f(filename, std::ios::out | std::ios::binary);
@@ -45,6 +47,11 @@ void SurfaceMesh<triangle>::save(const std::string &filename) const {
     f << "SCALARS type int\nLOOKUP_TABLE default\n";
     for (const auto &v : facetype)
         f << v << "\n";
+    f << "SCALARS dens double\nLOOKUP_TABLE default\n";
+    for (const auto &t : elems) {
+        const point p = (pts[t.p1] + pts[t.p2] + pts[t.p3]) * (1. / 3);
+        f << density(p) << "\n";
+    }
 }
 
 void save(const std::string &filename, const std::vector<point> &pts, const std::vector<triangle> &tri) {

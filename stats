@@ -1,0 +1,25 @@
+30 x 30 x 30
+
+dof = 1
+Interpolation error: mean: 0%, std dev: 0%, min: 0%, max: 0%
+Extrapolation error: mean: 0.900143%, std dev: 0.588287%, min: 0%, max: 2.61199%
+
+dof = 4
+Interpolation error: mean: 0.000444435%, std dev: 0.00123589%, min: 1.1307e-07%, max: 0.0148863%
+Extrapolation error: mean: 0.061492%, std dev: 0.0670462%, min: 1.1307e-07%, max: 0.486877%
+
+dof = 10
+Interpolation error: mean: 0.000256484%, std dev: 0.000699284%, min: 5.28582e-09%, max: 0.00752178%
+Extrapolation error: mean: 0.0438462%, std dev: 0.0610408%, min: 5.28582e-09%, max: 0.452974%
+
+linear RBF
+Rbf: 0.845164222383% 0.518011047446%
+
+cubic RBF
+Rbf: 0.171809539666% 0.122659228984%
+
+quintic RBF
+Rbf: 0.0923183094377% 0.0993388022405%
+
+thin_plate RBF
+Rbf: 0.257541219777% 0.259588045173%

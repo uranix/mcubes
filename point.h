@@ -20,6 +20,7 @@ struct dim3 {
     dim3(const std::ptrdiff_t i, const std::ptrdiff_t j, const std::ptrdiff_t k) : i(i), j(j), k(k) { }
     dim3() : dim3(0, 0, 0) { }
     dim3(const dim3 &o) : dim3(o.i, o.j, o.k) { }
+    std::ptrdiff_t prod() const { return i * j * k; }
     bool operator==(const dim3 &o) const {
         return (i == o.i) && (j == o.j) && (k == o.k);
     }
@@ -63,6 +64,9 @@ struct dim3 {
     int vertex_id() const {
         assert(i < 2 && j < 2 && k < 2 && i >= 0 && j >= 0 && k >= 0);
         return i + 2 * j + 4 * k;
+    }
+    ptrdiff_t dist(const dim3 &o) const {
+        return std::abs(i - o.i) + std::abs(j - o.j) + std::abs(k - o.k);
     }
 };
 

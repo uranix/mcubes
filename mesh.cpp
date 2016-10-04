@@ -1,4 +1,5 @@
 #include "mesh.h"
+#include "lut.h"
 
 #include <iostream>
 
@@ -90,9 +91,10 @@ void VoxelMesh::for_each_edge(const EdgeMesh &em, EdgeFunctor f) const {
 
 VoxelMesh::VoxelMesh(const dim3 &n, const point &ll, const point &ur)
     : n(n),
-    val(n.i * n.j * n.k),
     ll(ll), ur(ur),
-    h((ur.x - ll.x) / n.i, (ur.y - ll.y) / n.j, (ur.z - ll.z) / n.k)
+    h((ur.x - ll.x) / n.i, (ur.y - ll.y) / n.j, (ur.z - ll.z) / n.k),
+    val(n.prod()),
+    _mark(n.prod())
 {
 }
 
@@ -101,6 +103,12 @@ double &VoxelMesh::operator[](const dim3 &idx) {
 }
 const double &VoxelMesh::operator[](const dim3 &idx) const {
     return val[idx.linear_index(n)];
+}
+int &VoxelMesh::mark(const dim3 &idx) {
+    return _mark[idx.linear_index(n)];
+}
+const int &VoxelMesh::mark(const dim3 &idx) const {
+    return _mark[idx.linear_index(n)];
 }
 const point VoxelMesh::center(const dim3 &idx) const {
     return point(idx, ll, h);

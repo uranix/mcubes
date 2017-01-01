@@ -206,6 +206,7 @@ void SurfaceMesh<quad>::add_face(int p1, int p2, int p3, int p4, int sig, const 
     facetype.push_back(sig);
 }
 
+#ifdef NON_SYMMETRIC_SPLIT
 double quality(const point &p1, const point &p2, const point &p3) {
     double a = (p2 - p3).norm();
     double b = (p1 - p3).norm();
@@ -246,3 +247,21 @@ void SurfaceMesh<triangle>::add_face(int p1, int p2, int p3, int p4, int sig, co
     facetype.push_back(sig);
     facetype.push_back(sig);
 }
+#else
+template<>
+void SurfaceMesh<triangle>::add_face(int p1, int p2, int p3, int p4, int sig, const dim3 &dir) {
+    int p5 = pts.size();
+    point center = (pts[p1] + pts[p2] + pts[p3] + pts[p4]) * 0.25;
+    pts.push_back(center);
+
+    elems.push_back(triangle{p1, p2, p5});
+    elems.push_back(triangle{p2, p3, p5});
+    elems.push_back(triangle{p3, p4, p5});
+    elems.push_back(triangle{p4, p1, p5});
+
+    facetype.push_back(sig);
+    facetype.push_back(sig);
+    facetype.push_back(sig);
+    facetype.push_back(sig);
+}
+#endif

@@ -41,11 +41,11 @@ int main(int argc, char **argv) {
     std::cout << "Generating mesh" << std::endl;
     if (tri) {
         SurfaceMesh<triangle> sm(vm, 1.2 * mbs.size());
-        std::cout << "Saving mesh" << std::endl;
+        std::cout << "Saving TRI mesh" << std::endl;
         sm.save("res_tri.vtk");
     } else {
         SurfaceMesh<quad> sm(vm, mbs.size());
-        std::cout << "Saving mesh" << std::endl;
+        std::cout << "Saving QUAD mesh" << std::endl;
         sm.save("res_quad.vtk");
     }
     return 0;

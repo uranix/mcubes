@@ -84,7 +84,7 @@ public:
                     int cid = (cubes[j] + dim3(1, 1, 1)).linear_index(vm.n + dim3(1, 1, 1));
                     ptsid[j] = ptsoffs[cid] + (edgedata[j] & 3);
                 }
-                if (ec == 1)
+                if ((ec == 1) ^ (dir.j == 1))
                     this->add_face(ptsid[0], ptsid[1], ptsid[3], ptsid[2], sig, dir);
                 else
                     this->add_face(ptsid[0], ptsid[2], ptsid[3], ptsid[1], sig, dir);

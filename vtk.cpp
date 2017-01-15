@@ -1,12 +1,10 @@
-#include "vtk.h"
-
 #include <fstream>
 #include <algorithm>
 
 #include "mesh.h"
 
 template<>
-void SurfaceMesh<quad>::save(const std::string &filename) const {
+void SurfaceMesh<quad>::save_vtk(const std::string &filename) const {
     std::ofstream f(filename, std::ios::out | std::ios::binary);
     f << "# vtk DataFile Version 3.0\n";
     f << "Trinagulated surface\n";
@@ -27,7 +25,7 @@ void SurfaceMesh<quad>::save(const std::string &filename) const {
 }
 
 template<>
-void SurfaceMesh<triangle>::save(const std::string &filename) const {
+void SurfaceMesh<triangle>::save_vtk(const std::string &filename) const {
     std::ofstream f(filename, std::ios::out | std::ios::binary);
     f << "# vtk DataFile Version 3.0\n";
     f << "Trinagulated surface\n";
@@ -47,34 +45,31 @@ void SurfaceMesh<triangle>::save(const std::string &filename) const {
         f << v << "\n";
 }
 
-void save(const std::string &filename, const std::vector<point> &pts, const std::vector<triangle> &tri) {
+template<>
+void SurfaceMesh<quad>::save_txt(const std::string &filename) const {
     std::ofstream f(filename, std::ios::out | std::ios::binary);
-    f << "# vtk DataFile Version 3.0\n";
-    f << "Trinagulated surface\n";
-    f << "ASCII\n";
-    f << "DATASET UNSTRUCTURED_GRID\n";
-    f << "POINTS " << pts.size() << " float\n";
+    f << pts.size() << "\n";
     for (const auto &p : pts)
         f << p.x << " " << p.y << " " << p.z << "\n";
-    f << "CELLS " << tri.size() << " " << 4 * tri.size() << "\n";
-    for (const auto &t : tri)
-        f << "3 " << t.p1 << " " << t.p2 << " " << t.p3 << "\n";
-    f << "CELL_TYPES " << tri.size() << "\n";
-    std::for_each(tri.begin(), tri.end(), [&f] (const triangle &) { f << "5\n"; });
+    f << elems.size() << "\n";
+    for (size_t i = 0; i < elems.size(); i++) {
+        const auto &q = elems[i];
+        const auto &v = facetype[i];
+        f << q.p1 << " " << q.p2 << " " << q.p3 << " "
+            << q.p4 << " " << v << "\n";
+    }
 }
 
-void save(const std::string &filename, const std::vector<point> &pts, const std::vector<quad> &quads) {
+template<>
+void SurfaceMesh<triangle>::save_txt(const std::string &filename) const {
     std::ofstream f(filename, std::ios::out | std::ios::binary);
-    f << "# vtk DataFile Version 3.0\n";
-    f << "Trinagulated surface\n";
-    f << "ASCII\n";
-    f << "DATASET UNSTRUCTURED_GRID\n";
-    f << "POINTS " << pts.size() << " float\n";
+    f << pts.size() << "\n";
     for (const auto &p : pts)
         f << p.x << " " << p.y << " " << p.z << "\n";
-    f << "CELLS " << quads.size() << " " << 5 * quads.size() << "\n";
-    for (const auto &q : quads)
-        f << "4 " << q.p1 << " " << q.p2 << " " << q.p3 << " " << q.p4 << "\n";
-    f << "CELL_TYPES " << quads.size() << "\n";
-    std::for_each(quads.begin(), quads.end(), [&f] (const quad &) { f << "9\n"; });
+    f << elems.size() << "\n";
+    for (size_t i = 0; i < elems.size(); i++) {
+        const auto &q = elems[i];
+        const auto &v = facetype[i];
+        f << q.p1 << " " << q.p2 << " " << q.p3 << " " << v << "\n";
+    }
 }

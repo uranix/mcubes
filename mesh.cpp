@@ -1,4 +1,5 @@
 #include "mesh.h"
+#include "lut.h"
 
 #include <iostream>
 

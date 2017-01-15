@@ -4,7 +4,6 @@
 #include <array>
 
 #include "geom.h"
-#include "lut.h"
 
 class EdgeMesh {
 public:
@@ -91,5 +90,6 @@ public:
             });
     }
     void add_face(int p1, int p2, int p3, int p4, int sig, const dim3 &dir);
-    void save(const std::string &filename) const;
+    void save_vtk(const std::string &filename) const;
+    void save_txt(const std::string &filename) const;
 };

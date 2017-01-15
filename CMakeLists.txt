@@ -11,4 +11,6 @@ set(SOURCES main.cpp vtk.cpp mesh.cpp)
 
 add_executable(main ${SOURCES})
 
+if(LUTGEN)
 add_executable(cube cube.cpp)
+endif()
